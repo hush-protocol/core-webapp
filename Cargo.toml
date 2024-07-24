@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "src/hush-web-app-backend"
+]
+resolver = "2"
