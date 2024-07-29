@@ -1,5 +1,7 @@
 [workspace]
 members = [
-    "src/hush-web-app-backend"
+    "src/backend/storage",
+    "src/backend/system_api",
+    "src/backend/hush"
 ]
 resolver = "2"

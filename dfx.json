@@ -1,13 +1,25 @@
 {
   "canisters": {
-    "hush-web-app-backend": {
-      "candid": "src/hush-web-app-backend/hush-web-app-backend.did",
-      "package": "hush-web-app-backend",
+    "hush":{
+      "candid":"src/backend/hush/hush.did",
+      "package":"hush",
+      "type":"rust"
+    },
+    "system_api": {
+      "candid": "src/backend/system_api/vetkd_system_api.did",
+      "package": "system_api",
       "type": "rust"
     },
+    "storage": {
+      "candid": "src/backend/storage/storage.did",
+      "package": "storage",
+      "type": "rust"
+    },
+    
     "hush-web-app-frontend": {
       "dependencies": [
-        "hush-web-app-backend"
+        "storage",
+        "system_api"
       ],
       "source": [
         "src/hush-web-app-frontend/dist"

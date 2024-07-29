@@ -27,7 +27,7 @@
     "build": "tsc && vite build",
     "format": "prettier --write \"src/**/*.{json,js,jsx,ts,tsx,css,scss}\"",
     "prebuild": "dfx generate",
-    "setup": "npm i && dfx canister create hush-web-app-backend && dfx generate hush-web-app-backend && dfx deploy",
+    "setup": "npm i && dfx canister create storage && dfx canister create system_api --specified-id s55qq-oqaaa-aaaaa-aaakq-cai && dfx generate storage && dfx generate system_api && dfx deploy",
     "start": "vite --port 3000",
     "test": "vitest run"
   },

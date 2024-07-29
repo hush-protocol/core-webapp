@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { hush_web_app_backend } from 'declarations/hush-web-app-backend';
+import { storage } from 'declarations/storage';
 
 function App() {
   const [greeting, setGreeting] = useState('');
@@ -7,7 +7,7 @@ function App() {
   function handleSubmit(event) {
     event.preventDefault();
     const name = event.target.elements.name.value;
-    hush_web_app_backend.greet(name).then((greeting) => {
+    storage.greet(name).then((greeting) => {
       setGreeting(greeting);
     });
     return false;
