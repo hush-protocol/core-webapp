@@ -22,3 +22,4 @@ pub async fn get_encryption_public_key() -> String {
 
     hex::encode(response.public_key)
 }
+

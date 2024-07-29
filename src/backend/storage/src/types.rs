@@ -40,3 +40,10 @@ pub struct VetKDEncryptedKeyRequest {
 pub struct VetKDEncryptedKeyReply {
     pub encrypted_key: Vec<u8>,
 }
+
+
+#[derive(CandidType, Deserialize)]
+pub struct StorageCanisterInput{
+    pub username: String,
+}
+
