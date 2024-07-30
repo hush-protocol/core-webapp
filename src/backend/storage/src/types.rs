@@ -47,3 +47,7 @@ pub struct StorageCanisterInput{
     pub username: String,
 }
 
+#[derive(CandidType, Deserialize,Debug,Clone)]
+pub struct RecoveryVerifyInput {
+    pub data: String,
+}

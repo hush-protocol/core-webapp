@@ -31,6 +31,10 @@ thread_local! {
     static USERNAME: RefCell<StableCell<String,Memory>> = RefCell::new(
         StableCell::init(MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1))),"".to_string()).unwrap()
     );
+    static RECOVERY_CANISTERS_STORAGE_MAP: RefCell<StableBTreeMap<Principal, Vec<u8>, Memory>> = RefCell::new(
+        StableBTreeMap::new(MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(2))))
+    );
+
 }
 pub struct SecretStorageState;
 
@@ -69,6 +73,36 @@ impl SecretStorageState {
         USERNAME.with(|state| {
             state.borrow_mut().set(username);
         });
+    }
+
+    pub fn read_recovery_storage_canister_bytes(canister_id: Principal) -> Option<Vec<u8>> {
+        RECOVERY_CANISTERS_STORAGE_MAP.with(|state| {
+            state.borrow().get(&canister_id).clone()
+        })
+    }
+
+    pub fn write_recovery_storage_canister_bytes(canister_id: Principal, bytes: Vec<u8>) {
+        RECOVERY_CANISTERS_STORAGE_MAP.with(|state| {
+            state.borrow_mut().insert(canister_id, bytes);
+        });
+    }
+
+    pub fn clear_recovery_storage_canister_bytes(canister_id: Principal) {
+        RECOVERY_CANISTERS_STORAGE_MAP.with(|state| {
+            state.borrow_mut().remove(&canister_id);
+        });
+    }
+
+    pub fn if_recovery_storage_canister_exists(canister_id: Principal) -> bool {
+        RECOVERY_CANISTERS_STORAGE_MAP.with(|state| {
+            state.borrow().contains_key(&canister_id)
+        })
+    }
+
+    pub fn get_latest_secrets_index() -> u64 {
+        SECRETS.with(|state| {
+            state.borrow().len() as u64
+        })
     }
 
 
