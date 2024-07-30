@@ -1,4 +1,4 @@
-use candid::{CandidType, Deserialize};
+use candid::{CandidType, Deserialize,Nat,Principal};
 
 
 #[derive(CandidType,Deserialize)]

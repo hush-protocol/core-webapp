@@ -15,3 +15,4 @@ candid = "0.10"
 ic-cdk = "0.13"
 ic-cdk-timers = "0.7" # Feel free to remove this dependency if you don't need timers
 ic-stable-structures = "0.6.5"
+serde = "1"

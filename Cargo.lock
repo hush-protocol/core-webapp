@@ -505,6 +505,7 @@ dependencies = [
  "ic-cdk 0.13.2",
  "ic-cdk-timers",
  "ic-stable-structures",
+ "serde",
 ]
 
 [[package]]

@@ -1,3 +1,18 @@
-service : {
-    "greet": (text) -> (text) query;
+type Result = variant { Ok; Err : text };
+type Result_1 = variant { Ok : text; Err : text };
+type SecretStorage = record {
+  recovery_storage_canisters : vec principal;
+  secret : text;
+};
+type StorageCanisterInput = record { username : text };
+service : (StorageCanisterInput) -> {
+  add_secret : (SecretStorage, vec text) -> (Result);
+  get_latest_derivation_path : () -> (text) query;
+  get_public_key : () -> (Result_1);
+  get_storage : (nat64) -> (opt SecretStorage) query;
+  get_storages : () -> (vec SecretStorage) query;
+  get_username : () -> (text) query;
+  verify_secret : (nat64, blob, vec text) -> (Result_1);
+  version : () -> (text) query;
+  write_recovery_storage_canister_bytes : (blob) -> (Result);
 }

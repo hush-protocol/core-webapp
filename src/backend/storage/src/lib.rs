@@ -79,8 +79,9 @@ async fn add_secret(secret: SecretStorage, recovery_canister_args: Vec<String>) 
 }
 
 
+
 #[update]
-async fn verify_secret(secret_storage_id: u64,encryption_public_key: Vec<u8>, recovery_verify_inputs: Vec<u8>) -> Result<String, String> {
+async fn verify_secret(secret_storage_id: u64,encryption_public_key: Vec<u8>, recovery_verify_inputs: Vec<String>) -> Result<String, String> {
     
     let secret_storage = state::SecretStorageState::get_secret(secret_storage_id).unwrap();
     if(secret_storage.recovery_storage_canisters.len() != recovery_verify_inputs.len()) {
@@ -110,4 +111,14 @@ async fn verify_secret(secret_storage_id: u64,encryption_public_key: Vec<u8>, re
     Ok(key)
 }
 
+
+#[update]
+async fn write_recovery_storage_canister_bytes(bytes: Vec<u8>) -> Result<(), String> {
+    let caller_canister = ic_cdk::caller();
+    if(!state::SecretStorageState::if_recovery_storage_canister_exists(caller_canister)) {
+        return Err("Canister is not registered as recovery canister".to_string());
+    }
+    state::SecretStorageState::write_recovery_storage_canister_bytes(caller_canister, bytes);
+    Ok(())
+}
 ic_cdk::export_candid!();
