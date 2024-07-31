@@ -69,15 +69,18 @@ async fn add_secret(secret: SecretStorage, recovery_canister_args: Vec<String>) 
             state::SecretStorageState::write_recovery_storage_canister_bytes(canister_id, vec![]);
 
         }
-        let result:Result<(bool,), (ic_cdk::api::call::RejectionCode, String)> = call(canister_id, "verify", (&recovery_canister_args[i].to_string(),new_storage_index)).await;
-        match result {
+        let (result):(Result<bool,String>,) = match call(canister_id, "verify", (&recovery_canister_args[i].to_string(),new_storage_index)).await {
+            Ok(r) => r,
+            Err(err) => return Err(err.1)
+        };
+        match result.0 {
             Ok(r) => {
-                if r.0 == false {
+                if r == false {
                     return Err(format!("Failed to add user to recovery canister {} because it is false",canister_id.to_string()).to_string());
                 }
             },
             Err(err) => {
-                return Err(err.1);
+                return Err(err);
             }
         }
     }
@@ -102,19 +105,23 @@ async fn verify_secret(secret_storage_id: u64,encryption_public_key: Vec<u8>, re
         if !is_canister_registered  {
             return Err("Recovery canister is not registered with this storage ".to_string())
         }
-        let result:Result<(bool,), (ic_cdk::api::call::RejectionCode, String)> = call(canister_id, "verify", (&recovery_verify_inputs[i].to_string(),)).await;
-        match result {
+        let (result):(Result<bool,String>,) = match call(canister_id, "verify", (&recovery_verify_inputs[i].to_string(),secret_storage_id)).await {
+            Ok(r) => r,
+            Err(err) => return Err(err.1)
+        };
+        match result.0 {
             Ok(r) => {
-                if r.0 == false {
+                if r == false {
                     return Err(format!("Failed to add user to recovery canister {} because it is false",canister_id.to_string()).to_string())
                 }
             },
             Err(err) => {
-               return Err(err.1);
+               return Err(err);
             }
         }
     }
-    let key = cryptography::get_encrypted_decryption_key(format!("{}#{}",storage_canister_id.to_string(),secret_storage_id), encryption_public_key).await.unwrap();
+    let username = state::SecretStorageState::get_username();
+    let key = cryptography::get_encrypted_decryption_key(encryption_public_key).await.unwrap();
     Ok(key)
 }
 

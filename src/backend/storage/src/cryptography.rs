@@ -25,9 +25,9 @@ pub async fn get_encryption_public_key() -> Result<String, String> {
 }
 
 
-pub async fn get_encrypted_decryption_key(derivation_id: String,encryption_public_key: Vec<u8>) -> Result<String,String>  {
+pub async fn get_encrypted_decryption_key(encryption_public_key: Vec<u8>) -> Result<String,String>  {
     let request: VetKDEncryptedKeyRequest = VetKDEncryptedKeyRequest {
-        derivation_id: derivation_id.as_bytes().to_vec(),
+        derivation_id: ic_cdk::id().as_slice().to_vec(),
         public_key_derivation_path: vec![b"ibe_encryption".to_vec()],
         key_id: bls12_381_test_key_1(),
         encryption_public_key,
@@ -43,6 +43,8 @@ pub async fn get_encrypted_decryption_key(derivation_id: String,encryption_publi
         Ok(r) => r
         
     };
+    ic_cdk::println!("Encrypted key: {:?}", hex::encode(&response.encrypted_key));
+    
     Ok(hex::encode(response.encrypted_key))
 
 }

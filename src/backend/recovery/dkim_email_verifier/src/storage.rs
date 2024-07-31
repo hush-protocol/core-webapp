@@ -1,5 +1,6 @@
 use crate::types::DkimEmailStorageState;
 use candid::Principal;
+use viadkim::signature::DKIM_SIGNATURE_NAME;
 
 pub async fn write_recovery_storage_canister(storage_id: Principal, arg: DkimEmailStorageState) -> Result<(), String> {
     let arg_bytes = bincode::serialize(&arg).map_err(|e| format!("Failed to serialize arg: {:?}", e))?;
@@ -21,6 +22,13 @@ pub async fn read_recovery_storage_canister(storage_id: Principal) -> Result<Dki
         Some(res) => res,
         None => return Err("No bytes found".to_string()),
     };
+
+    if(res.is_empty()){
+        return Ok(DkimEmailStorageState{
+            storage_id_to_email: std::collections::BTreeMap::new(),
+
+        });
+    }
 
     let state: DkimEmailStorageState = bincode::deserialize(&res).map_err(|e| format!("Failed to deserialize state: {:?}", e))?;
     Ok(state)

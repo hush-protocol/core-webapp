@@ -39,7 +39,8 @@ export default function HomePage() {
         const storageActor = await createStorageActor(storagePrincipal[0]);
         const secrets = await storageActor.get_storages();
         console.log("Secrets", secrets);
-        addHushUser(storagePrincipal[0], secrets,username);
+        console.log(storagePrincipal[0].toText(),"kjsldj")
+        addHushUser(storagePrincipal[0].toText(), secrets,username);
         navigate("/dashboard", {
           replace: true,
         });
@@ -53,7 +54,7 @@ export default function HomePage() {
         const storagePrincipal = result.Ok;
         const storageActor = await createStorageActor(storagePrincipal);
         const secrets = await storageActor.get_storages();
-        addHushUser(storagePrincipal, secrets,username);
+        addHushUser(storagePrincipal.toText(), secrets,username);
         navigate("/dashboard", {
           replace: true,
         });
