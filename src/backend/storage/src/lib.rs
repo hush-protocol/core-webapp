@@ -45,6 +45,12 @@ async fn get_latest_derivation_path () -> String {
     format!("{}#{}",ic_cdk::id().to_string(),state::SecretStorageState::get_secrets().len() + 1)
 }
 
+#[query]
+async fn read_recovery_storage_canister_bytes() -> Option<Vec<u8>> {
+    let caller_canister = ic_cdk::caller();
+    state::SecretStorageState::read_recovery_storage_canister_bytes(caller_canister)
+}
+
 #[update]
 async fn get_public_key() -> Result<String, String> {
     cryptography::get_encryption_public_key().await
@@ -58,16 +64,15 @@ async fn add_secret(secret: SecretStorage, recovery_canister_args: Vec<String>) 
     for (i, canister_id) in secret.recovery_storage_canisters.iter().enumerate() {
         let canister_id =  canister_id.to_owned();
         let is_canister_registered = state::SecretStorageState::if_recovery_storage_canister_exists(canister_id);
+        let new_storage_index = state::SecretStorageState::get_latest_secrets_index();
         if !is_canister_registered  {
             state::SecretStorageState::write_recovery_storage_canister_bytes(canister_id, vec![]);
+
         }
-        let result:Result<(bool,), (ic_cdk::api::call::RejectionCode, String)> = call(canister_id, "verify", (&recovery_canister_args[i].to_string(),)).await;
+        let result:Result<(bool,), (ic_cdk::api::call::RejectionCode, String)> = call(canister_id, "verify", (&recovery_canister_args[i].to_string(),new_storage_index)).await;
         match result {
             Ok(r) => {
                 if r.0 == false {
-                    if(!is_canister_registered) {
-                        state::SecretStorageState::clear_recovery_storage_canister_bytes(canister_id);
-                    }
                     return Err(format!("Failed to add user to recovery canister {} because it is false",canister_id.to_string()).to_string());
                 }
             },
@@ -123,4 +128,6 @@ async fn write_recovery_storage_canister_bytes(bytes: Vec<u8>) -> Result<(), Str
     state::SecretStorageState::write_recovery_storage_canister_bytes(caller_canister, bytes);
     Ok(())
 }
+
+
 ic_cdk::export_candid!();

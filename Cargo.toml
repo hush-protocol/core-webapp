@@ -2,6 +2,7 @@
 members = [
     "src/backend/storage",
     "src/backend/system_api",
-    "src/backend/hush"
+    "src/backend/hush",
+    "src/backend/recovery/dkim_email_verifier"
 ]
 resolver = "2"

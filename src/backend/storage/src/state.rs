@@ -9,6 +9,8 @@ type Memory = VirtualMemory<DefaultMemoryImpl>;
 #[derive(Debug,CandidType,Deserialize,Clone)]
 pub struct SecretStorage {
     pub secret : String,
+    pub name : String,
+    pub created_at : u64,
     pub recovery_storage_canisters:  Vec<Principal>
 }
 impl Storable for SecretStorage {

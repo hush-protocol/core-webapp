@@ -2,7 +2,9 @@ type Result = variant { Ok; Err : text };
 type Result_1 = variant { Ok : text; Err : text };
 type SecretStorage = record {
   recovery_storage_canisters : vec principal;
+  name : text;
   secret : text;
+  created_at : nat64;
 };
 type StorageCanisterInput = record { username : text };
 service : (StorageCanisterInput) -> {
@@ -12,6 +14,7 @@ service : (StorageCanisterInput) -> {
   get_storage : (nat64) -> (opt SecretStorage) query;
   get_storages : () -> (vec SecretStorage) query;
   get_username : () -> (text) query;
+  read_recovery_storage_canister_bytes : () -> (opt blob) query;
   verify_secret : (nat64, blob, vec text) -> (Result_1);
   version : () -> (text) query;
   write_recovery_storage_canister_bytes : (blob) -> (Result);
