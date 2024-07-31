@@ -54,7 +54,7 @@ import { IBECiphertext, TransportSecretKey } from "ic-vetkd-utils";
 import { hex_decode, hex_encode, stringToUint8Array } from "@/lib/utils";
 import { Principal } from "@dfinity/principal";
 import { toast } from "sonner";
-
+import {canisterId as recoveryCanisterID} from "declarations/recovery_dkim_email_verifier"
 const options = [{ label: "DKIM Email", value: "bw4dl-smaaa-aaaaa-qaacq-cai" }];
 
 export default function SecretList() {
@@ -115,7 +115,7 @@ export default function SecretList() {
         name: "My First Secret",
         secret:ciphertext,
         created_at: BigInt(Date.now()),
-        recovery_storage_canisters:[Principal.fromText("bw4dl-smaaa-aaaaa-qaacq-cai")],
+        recovery_storage_canisters:[Principal.fromText(recoveryCanisterID)],
     },[rawEmail]);
     console.log("Result",result);
     if("Err" in result){
