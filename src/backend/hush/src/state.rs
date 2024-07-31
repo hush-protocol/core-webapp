@@ -26,7 +26,7 @@ thread_local! {
     ));
 
     static RECOVERY_STORAGE_CANISTERS: RefCell<StableVec<Principal,Memory>> = RefCell::new(
-       StableVec::new(MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0)))).unwrap()
+       StableVec::new(MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1)))).unwrap()
     );
 }
 
@@ -43,6 +43,12 @@ impl HushProtocolState {
         RECOVERY_STORAGE_CANISTERS.with(|state| {
             state.borrow_mut().push(value.borrow());
         });
+    }
+
+    pub fn does_username_exist(key: &String) -> bool {
+        USERNAME_TO_STORAGE_CANISTER.with(|state| {
+            state.borrow().contains_key(key)
+        })
     }
 
     pub fn get_storage_canister_from_username(key: &String) -> Option<Principal> {

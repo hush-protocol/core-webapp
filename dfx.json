@@ -18,6 +18,7 @@
     
     "hush-web-app-frontend": {
       "dependencies": [
+        "hush",
         "storage",
         "system_api"
       ],

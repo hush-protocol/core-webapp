@@ -25,8 +25,8 @@ thread_local! {
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
 
-    static SECRETS: RefCell<StableVec<SecretStorage, Memory>> = RefCell::new(
-        StableVec::new(MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0)))).unwrap()
+    static SECRETS: RefCell<StableBTreeMap<u64,SecretStorage, Memory>> = RefCell::new(
+        StableBTreeMap::new(MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0))))
     );
     static USERNAME: RefCell<StableCell<String,Memory>> = RefCell::new(
         StableCell::init(MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1))),"".to_string()).unwrap()
@@ -41,25 +41,26 @@ pub struct SecretStorageState;
 impl SecretStorageState {
     pub fn get_secrets() -> Vec<SecretStorage> {
         SECRETS.with(|state| {
-            state.borrow().iter().collect()
+            state.borrow().iter().map(|(_,v)| v.clone()).collect()
         })
     }
-    pub fn get_secret(index: u64) -> Option<SecretStorage> {
+    pub fn get_secret(index: &u64) -> Option<SecretStorage> {
         SECRETS.with(|state| {
             state.borrow().get(index).clone()
         })
     }
     pub fn add_secret(secret: SecretStorage) {
         SECRETS.with(|state| {
-            state.borrow_mut().push(secret.borrow());
+            let index = state.borrow().len() as u64;
+            state.borrow_mut().insert(index, secret);
         });
     }
 
     pub fn add_recovery_storage_canister(index: u64, value: Principal) {
         SECRETS.with(|state| {
-            let mut secret = state.borrow().get(index).unwrap();
+            let mut secret = state.borrow().get(index.borrow()).unwrap();
             secret.recovery_storage_canisters.push(value);
-            state.borrow_mut().set(index, secret.borrow());
+            state.borrow_mut().insert(index, secret)
         });
     }
 

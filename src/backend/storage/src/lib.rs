@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+
 use candid::Principal;
 use ic_cdk::{self, call, init, query, update};
 use state::SecretStorage;
@@ -30,7 +32,7 @@ async fn get_username() -> String {
 
 #[query]
 async fn get_storage(index: u64) -> Option<SecretStorage> {
-    state::SecretStorageState::get_secret(index)
+    state::SecretStorageState::get_secret(index.borrow())
 }
 
 #[query]
@@ -83,7 +85,7 @@ async fn add_secret(secret: SecretStorage, recovery_canister_args: Vec<String>) 
 #[update]
 async fn verify_secret(secret_storage_id: u64,encryption_public_key: Vec<u8>, recovery_verify_inputs: Vec<String>) -> Result<String, String> {
     
-    let secret_storage = state::SecretStorageState::get_secret(secret_storage_id).unwrap();
+    let secret_storage = state::SecretStorageState::get_secret(secret_storage_id.borrow()).unwrap();
     if(secret_storage.recovery_storage_canisters.len() != recovery_verify_inputs.len()) {
         return Err("Invalid recovery canister arguments".to_string())
     }

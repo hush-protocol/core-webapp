@@ -2,6 +2,7 @@ type Result = variant { Ok : principal; Err : text };
 service : {
   add_recovery_canister : (principal) -> ();
   create_user : (text) -> (Result);
+  does_username_exist : (text) -> (bool) query;
   get_all_recovery_canisters : () -> (vec principal) query;
   get_recovery_canister : (nat64) -> (opt principal) query;
   get_storage_canister : (text) -> (opt principal) query;
