@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { hush ,idlFactory} from "declarations/hush";
 import { useLocation, useRouter } from "wouter";
@@ -19,6 +18,7 @@ import { createActor as createStorageActor,  } from "declarations/storage";
 import { toast } from "sonner";
 import { useHushUser } from "@/lib/store/user-store";
 import { match } from "ts-pattern";
+import { Button } from "@nextui-org/react";
 
 // import { Label } from "@radix-ui/react-select";
 export default function HomePage() {
@@ -92,7 +92,7 @@ export default function HomePage() {
           </form>
         </CardContent>
         <CardFooter className="flex justify-center items-center my-4">
-          <Button onClick={onEnterClick}>Enter</Button>
+          <Button onClick={onEnterClick} color="primary">{!loading ? "Enter" : "Loading"}</Button>
         </CardFooter>
       </Card>
     </div>
