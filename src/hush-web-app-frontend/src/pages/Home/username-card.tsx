@@ -58,17 +58,19 @@ export const UsernameCard = ({
   username,
   setUsername,
   onEnterClick,
+  loading = false
 }: {
   username: string;
   setUsername: (newUsername: string) => void;
   onEnterClick: React.MouseEventHandler<HTMLButtonElement>;
+  loading:boolean
 }) => {
   return (
     <>
       <Card className="w-[350px]">
         <UsernameCardHeader />
         <UsernameBody username={username} setUsername={setUsername} />
-        <UsernameFooter onClick={onEnterClick} />
+        <UsernameFooter onClick={onEnterClick}  loading={loading}/>
       </Card>
     </>
   );

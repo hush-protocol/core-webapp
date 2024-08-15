@@ -9,7 +9,6 @@ import { useLocation } from "wouter";
 import { createActor as createStorageActor,  } from "declarations/storage";
 import { toast } from "sonner";
 import { useHushUser } from "@/lib/store/user-store";
-import { Button } from "@/components/ui/button";
 import { UsernameCard } from "./username-card";
 // import { Button } from "@nextui-org/react";
 
@@ -60,7 +59,7 @@ export default function HomePage() {
   };
   return (
     <div className="w-screen h-screen grid place-items-center">
-      <UsernameCard onEnterClick={onEnterClick} setUsername={setUsername} username={username}/>
+      <UsernameCard loading={loading} onEnterClick={onEnterClick} setUsername={setUsername} username={username}/>
     </div>
   );
 }
