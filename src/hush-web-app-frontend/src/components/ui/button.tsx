@@ -3,6 +3,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { LoaderPinwheelIcon } from "lucide-react"
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300",
@@ -33,13 +34,18 @@ const buttonVariants = cva(
   }
 )
 
-export interface ButtonProps
+export interface InnerButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
+
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+export interface ButtonProps extends InnerButtonProps {
+  loading?: boolean
+}
+
+const InnerButton = React.forwardRef<HTMLButtonElement, InnerButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     return (
@@ -51,6 +57,22 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     )
   }
 )
-Button.displayName = "Button"
 
+
+InnerButton.displayName = "Button"
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({loading,...restProps}, ref) => (
+  <InnerButton
+      {...restProps}
+      ref={ref}
+    >
+      {loading ? (
+        <div className="animate-spin">
+          <LoaderPinwheelIcon className="h-5 w-5" />
+        </div>
+      ) : (
+        restProps.children
+      )}
+    </InnerButton>
+))
 export { Button, buttonVariants }

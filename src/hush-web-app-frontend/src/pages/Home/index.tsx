@@ -1,24 +1,17 @@
-import BannerImage from "../../public/banner.png";
 // import { CardFooter ,Card,CardContent,CardHeader,CardDescription,CardTitle} from "../components/ui/card";
 // import { SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { hush ,idlFactory} from "declarations/hush";
-import { useLocation, useRouter } from "wouter";
+import { hush } from "declarations/hush";
+import { useLocation } from "wouter";
 import { createActor as createStorageActor,  } from "declarations/storage";
 import { toast } from "sonner";
 import { useHushUser } from "@/lib/store/user-store";
-import { match } from "ts-pattern";
-import { Button } from "@nextui-org/react";
+import { Button } from "@/components/ui/button";
+import { UsernameCard } from "./username-card";
+// import { Button } from "@nextui-org/react";
 
 // import { Label } from "@radix-ui/react-select";
 export default function HomePage() {
@@ -39,7 +32,6 @@ export default function HomePage() {
         const storageActor = await createStorageActor(storagePrincipal[0]);
         const secrets = await storageActor.get_storages();
         console.log("Secrets", secrets);
-        console.log(storagePrincipal[0].toText(),"kjsldj")
         addHushUser(storagePrincipal[0].toText(), secrets,username);
         navigate("/dashboard", {
           replace: true,
@@ -68,33 +60,7 @@ export default function HomePage() {
   };
   return (
     <div className="w-screen h-screen grid place-items-center">
-      <Card className="w-[350px]">
-        <CardHeader>
-          <CardTitle>Enter Username</CardTitle>
-          <CardDescription>
-            Enter your existing username or create a new one
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form>
-            <div className="grid w-full items-center gap-4">
-              <div className="flex flex-col space-y-4">
-                <Label>Username</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Usually its email"
-                  value={username}
-                  onChange={(event) => setUsername(event.target.value)}
-                />
-              </div>
-            </div>
-          </form>
-        </CardContent>
-        <CardFooter className="flex justify-center items-center my-4">
-          <Button onClick={onEnterClick} color="primary">{!loading ? "Enter" : "Loading"}</Button>
-        </CardFooter>
-      </Card>
+      <UsernameCard onEnterClick={onEnterClick} setUsername={setUsername} username={username}/>
     </div>
   );
 }
