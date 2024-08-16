@@ -1,12 +1,10 @@
 import { useHushUser } from "@/lib/store/user-store";
-import { cn, shortenAddress } from "@/lib/utils";
+import { shortenAddress,cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { If, Then } from "react-if";
-import SecretList from "@/components/dashbaord/SecretList";
 import { useLocation } from "wouter";
 
-
-function Navbar({ className }: { className?: string }) {
+export function Navbar({ className }: { className?: string }) {
     const { username,clearHushUser } = useHushUser();
     const [_,navigate] = useLocation()
     return (
@@ -32,13 +30,3 @@ function Navbar({ className }: { className?: string }) {
       </If>
     );
   }
-
-export default function DashboardPage() {
-    return (
-        <div className="flex flex-col">
-            <Navbar />
-            <SecretList/>
-
-        </div>
-    );
-}
