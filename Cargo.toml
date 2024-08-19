@@ -3,6 +3,7 @@ members = [
     "src/backend/storage",
     "src/backend/system_api",
     "src/backend/hush",
-    "src/backend/recovery/dkim_email_verifier"
+    "src/backend/recovery/dkim_email_verifier",
+    "src/backend/recovery/aadhaar_digital_zk_verifier"
 ]
 resolver = "2"
