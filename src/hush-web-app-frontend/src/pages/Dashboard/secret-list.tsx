@@ -6,6 +6,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+
 import {
   Table,
   TableHeader,
@@ -29,8 +30,13 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useState } from "react";
-import { Checkbox, CheckboxGroup, Input } from "@nextui-org/react";
+import { useEffect, useState } from "react";
+import {
+  Checkbox,
+  CheckboxGroup,
+  Input,
+  ScrollShadow,
+} from "@nextui-org/react";
 import { Textarea } from "@/components/ui/textarea";
 import { EyeFilledIcon } from "@/components/icons/EyeFilledIcon";
 import { EyeSlashFilledIcon } from "@/components/icons/EyeSlashFilledIcon";
@@ -43,8 +49,180 @@ import { useFetchSecrets } from "@/lib/hooks/useFetchSecrets";
 import { BadgeCheckbox } from "@/components/ui/badge-checkbox";
 import { RECOVERY_CANISTERS_OPTIONS } from "@/lib/constant";
 import { Tabs, TabsTrigger, TabsContent, TabsList } from "@/components/ui/tabs";
+import { output } from "zod";
 
 const options = [{ label: "DKIM Email", value: "bw4dl-smaaa-aaaaa-qaacq-cai" }];
+
+interface RegisterOutput {
+  canister: string;
+  label: string;
+  component: string;
+  output?: string;
+}
+
+interface AddSecretModalProps {
+  newSecret: string;
+  setNewSecret: (value: string) => void;
+  isVisible: boolean;
+  toggleVisibility: () => void;
+  loading: boolean;
+  registSecret: (outputs: RegisterOutput[]) => void;
+}
+
+export function RetrieveSecret({recoveryCanisters,retrieveSecret,verifySecret,loading,secretIndex}:{recoveryCanisters:Principal[],retrieveSecret:string,secretIndex:number,loading:boolean,verifySecret:(index:number,outputs: RegisterOutput[]) => Promise<void>}) {
+  const [registerOutputs, setRegisterOutput] = useState<RegisterOutput[]>(
+    recoveryCanisters.map((canister) => {
+      const found = RECOVERY_CANISTERS_OPTIONS.find(
+        (option) => option.key === canister.toText()
+      );
+      if (!found) {
+        return {
+          canister: canister.toText(),
+          label: "Unknown",
+          component: "Unknown",
+        };
+      }
+      return {
+        canister: canister.toText(),
+        label: found.label,
+        component: found.component,
+      };
+    })
+  );
+  const [loadedComponents, setLoadedComponents] = useState<{
+    [key: string]: React.FC<{
+      output: string;
+      setOutput: (newOutput: string) => void;
+    }> | null;
+  }>({});
+
+  const setOutput = (newOutput: string, canister: string) => {
+    setRegisterOutput((prev) =>
+      prev.map((item) => {
+        if (item.canister === canister) {
+          return { ...item, output: newOutput };
+        }
+        return item;
+      })
+    );
+  };
+  const tabs = [
+    ...registerOutputs.map((item) => item.label),
+    "password",
+  ];
+
+  const [activeTab, setActiveTab] = useState(tabs[0]);
+
+  useEffect(() => {
+    registerOutputs.forEach((item) => {
+      if (!loadedComponents[item.component]) {
+        import(`../../components/recovery-forms/${item.component}`)
+          .then((module) => {
+            setLoadedComponents((prev) => ({
+              ...prev,
+              [item.component]: module.default,
+            }));
+          })
+          .catch((e) => {
+            console.error(e);
+            setLoadedComponents((prev) => ({
+              ...prev,
+              [item.component]: null,
+            }));
+          });
+      }
+    });
+  }, [registerOutputs]);
+  
+
+
+  const [isVisible, setIsVisible] = useState(false);
+  const toggleVisibility = () => setIsVisible(!isVisible);
+
+
+  return (<Dialog>
+    <DialogTrigger asChild>
+      <Button className="w-auto grid items-center">
+        See Secret
+      </Button>
+    </DialogTrigger>
+    <DialogContent className="sm:max-w-[425px]">
+      <DialogHeader>
+        <DialogTitle>Verify and see secret</DialogTitle>
+        <DialogDescription></DialogDescription>
+      </DialogHeader>
+      <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
+          <ScrollShadow
+            orientation="horizontal"
+            className="max-w-[470px] max-h-[300px]"
+          >
+            <TabsList className="overflow-auto overflow-x-auto">
+              <TabsTrigger value={tabs[0]}>Recovery Methods</TabsTrigger>
+              {registerOutputs.map((item) => (
+                <TabsTrigger key={item.canister} value={item.label}>
+                  {item.label}
+                </TabsTrigger>
+              ))}
+              <TabsTrigger value={tabs[tabs.length - 1]}>Password</TabsTrigger>
+            </TabsList>
+          </ScrollShadow>
+
+          {registerOutputs.map((item) => {
+            const Component = loadedComponents[item.component];
+            return (
+              <TabsContent value={item.label} key={item.canister}>
+                {Component ? (
+                  <Component
+                    output={item.output || ""}
+                    setOutput={(newOutput) =>
+                      setOutput(newOutput, item.canister)
+                    }
+                  />
+                ) : (
+                  <p>Loading...</p>
+                )}
+              </TabsContent>
+            );
+          })}
+
+          <TabsContent value="password">
+            <Input
+              variant="bordered"
+              placeholder="Enter your secret"
+              endContent={
+                <button
+                  className="focus:outline-none"
+                  type="button"
+                  onClick={toggleVisibility}
+                  aria-label="toggle password visibility"
+                >
+                  {isVisible ? (
+                    <EyeSlashFilledIcon className="text-2xl text-default-400 pointer-events-none" />
+                  ) : (
+                    <EyeFilledIcon className="text-2xl text-default-400 pointer-events-none" />
+                  )}
+                </button>
+              }
+              type={isVisible ? "text" : "password"}
+              
+              value={retrieveSecret}
+              className="max-w-xs placeholder:text-white"
+            />
+          </TabsContent>
+        </Tabs>
+
+        {activeTab === "password" && (
+           <DialogFooter>
+           <Button loading={loading} onClick={() => verifySecret(secretIndex,registerOutputs)}>
+               {loading ? "Loading" : "Verify"}
+             </Button>
+           <Button>Verify</Button>
+         </DialogFooter>
+        )}
+     
+    </DialogContent>
+  </Dialog>)
+}
 
 export function AddSecretModal({
   newSecret,
@@ -53,15 +231,55 @@ export function AddSecretModal({
   toggleVisibility,
   loading,
   registSecret,
-}: {
-  newSecret: string;
-  setNewSecret: (value: string) => void;
-  isVisible: boolean;
-  toggleVisibility: () => void;
-  loading: boolean;
-  registSecret: () => void;
-}) {
-  const [groupSelected, setGroupSelected] = useState<any[]>([]);
+}: AddSecretModalProps) {
+  const [registerOutputs, setRegisterOutput] = useState<RegisterOutput[]>([]);
+  const [loadedComponents, setLoadedComponents] = useState<{
+    [key: string]: React.FC<{
+      output: string;
+      setOutput: (newOutput: string) => void;
+    }> | null;
+  }>({});
+
+  const setOutput = (newOutput: string, canister: string) => {
+    setRegisterOutput((prev) =>
+      prev.map((item) => {
+        if (item.canister === canister) {
+          return { ...item, output: newOutput };
+        }
+        return item;
+      })
+    );
+  };
+
+  const tabs = [
+    "recovery-methods",
+    ...registerOutputs.map((item) => item.label),
+    "password",
+  ];
+
+  const [activeTab, setActiveTab] = useState(tabs[0]);
+
+  useEffect(() => {
+    registerOutputs.forEach((item) => {
+      if (!loadedComponents[item.component]) {
+        import(`../../components/recovery-forms/${item.component}`)
+          .then((module) => {
+            setLoadedComponents((prev) => ({
+              ...prev,
+              [item.component]: module.default,
+            }));
+          })
+          .catch((e) => {
+            console.error(e);
+            setLoadedComponents((prev) => ({
+              ...prev,
+              [item.component]: null,
+            }));
+          });
+      }
+    });
+  }, [registerOutputs]);
+
   return (
     <Dialog
       onOpenChange={(open) => {
@@ -73,25 +291,54 @@ export function AddSecretModal({
       <DialogTrigger asChild>
         <Button className="w-auto grid items-center">Add Secret</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="w-screen">
         <DialogHeader>
           <DialogTitle>Register Secret</DialogTitle>
-          <DialogDescription></DialogDescription>
         </DialogHeader>
-        <Tabs defaultValue="recovery-methods" className="w-[400px]">
-          <TabsList>
-            <TabsTrigger value="recovery-methods">Recovery Methods</TabsTrigger>
-            <TabsTrigger value="password">Password</TabsTrigger>
-          </TabsList>
-          <TabsContent value="recovery-methods">
-            <div className="grid gap-4 py-4">
-              {" "}
+        <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
+          <ScrollShadow
+            orientation="horizontal"
+            className="max-w-[470px] max-h-[300px]"
+          >
+            <TabsList className="overflow-auto overflow-x-auto">
+              <TabsTrigger value={tabs[0]}>Recovery Methods</TabsTrigger>
+              {registerOutputs.map((item) => (
+                <TabsTrigger key={item.canister} value={item.label}>
+                  {item.label}
+                </TabsTrigger>
+              ))}
+              <TabsTrigger value={tabs[tabs.length - 1]}>Password</TabsTrigger>
+            </TabsList>
+          </ScrollShadow>
+
+          <TabsContent value="recovery-methods" className="w-screen relative">
+            <div className="grid gap-4 py-4 w-[3000px]">
               <CheckboxGroup
                 className="gap-1"
                 label="Select Recovery Methods"
                 orientation="horizontal"
-                value={groupSelected}
-                onChange={setGroupSelected}
+                value={registerOutputs.map((item) => item.canister)}
+                onChange={(value) => {
+                  setRegisterOutput(
+                    value.map((canister) => {
+                      const found = RECOVERY_CANISTERS_OPTIONS.find(
+                        (option) => option.key === canister
+                      );
+                      if (!found) {
+                        return {
+                          canister,
+                          label: "Unknown",
+                          component: "Unknown",
+                        };
+                      }
+                      return {
+                        canister,
+                        label: found.label,
+                        component: found.component,
+                      };
+                    })
+                  );
+                }}
               >
                 {RECOVERY_CANISTERS_OPTIONS.map((option) => (
                   <BadgeCheckbox key={option.key} value={option.key}>
@@ -100,10 +347,30 @@ export function AddSecretModal({
                 ))}
               </CheckboxGroup>
               <p className="mt-4 ml-1 text-default-500">
-                Selected: {groupSelected.join(", ")}
+                Selected:{" "}
+                {registerOutputs.map((item) => item.canister).join(", ")}
               </p>
             </div>
           </TabsContent>
+
+          {registerOutputs.map((item) => {
+            const Component = loadedComponents[item.component];
+            return (
+              <TabsContent value={item.label} key={item.canister}>
+                {Component ? (
+                  <Component
+                    output={item.output || ""}
+                    setOutput={(newOutput) =>
+                      setOutput(newOutput, item.canister)
+                    }
+                  />
+                ) : (
+                  <p>Loading...</p>
+                )}
+              </TabsContent>
+            );
+          })}
+
           <TabsContent value="password">
             <Input
               variant="bordered"
@@ -129,17 +396,20 @@ export function AddSecretModal({
             />
           </TabsContent>
         </Tabs>
-      
-        <DialogFooter>
-          <Button onClick={registSecret}>
-            {loading ? "Loading" : "Register"}
-          </Button>
-        </DialogFooter>
+
+        {activeTab === "password" && (
+          <DialogFooter>
+            <Button onClick={() => registSecret(registerOutputs)}>
+              {loading ? "Loading" : "Register"}
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );
 }
-export function SecretTable({ secrets }: { secrets: SecretStorage[] }) {
+
+export function SecretTable({ retrieveSecret,loading,verifySecret,secrets }: { retrieveSecret:string,loading:boolean,verifySecret:(index:number,outputs: RegisterOutput[])=>Promise<void>,secrets: SecretStorage[] }) {
   return (
     <Table>
       <TableHeader>
@@ -166,62 +436,7 @@ export function SecretTable({ secrets }: { secrets: SecretStorage[] }) {
                 ).toDateString()}
               </TableCell>
               <TableCell>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button className="w-auto grid items-center">
-                      See Secret
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Register Secret</DialogTitle>
-                      <DialogDescription></DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <Badge>DKIM Verifier Selected</Badge>
-                      <div className="grid w-full gap-1.5">
-                        <Label htmlFor="message">Your Raw Email</Label>
-                        {/* <Textarea
-                            placeholder="Type your message here."
-                            value={rawEmail}
-                            onChange={(event) =>
-                              setRawEmail(event.target.value)
-                            }
-                            id="message"
-                          /> */}
-                      </div>
-                      {/* {retrieveSecret && (
-                          <Input
-                            variant="bordered"
-                            placeholder="Enter your secret"
-                            endContent={
-                              <button
-                                className="focus:outline-none"
-                                type="button"
-                                onClick={toggleVisibility}
-                                aria-label="toggle password visibility"
-                              >
-                                {isVisible ? (
-                                  <EyeSlashFilledIcon className="text-2xl text-default-400 pointer-events-none" />
-                                ) : (
-                                  <EyeFilledIcon className="text-2xl text-default-400 pointer-events-none" />
-                                )}
-                              </button>
-                            }
-                            type={isVisible ? "text" : "password"}
-                            value={retrieveSecret}
-                            className="max-w-xs placeholder:text-white"
-                          />
-                        )} */}
-                    </div>
-                    <DialogFooter>
-                      {/* <Button loading={loading} onClick={() => verifySecret(index)}>
-                          {loading ? "Loading" : "Verify"}
-                        </Button> */}
-                      <Button>Verify</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                <RetrieveSecret recoveryCanisters={secret.recovery_storage_canisters} retrieveSecret={retrieveSecret} secretIndex={index}  loading={loading} verifySecret={verifySecret} />
               </TableCell>
             </TableRow>
           );
@@ -236,12 +451,13 @@ export default function SecretList() {
   const { data: secrets, error } = useFetchSecrets({ storagePrincipal });
   const [isVisible, setIsVisible] = useState(false);
   const [rawEmail, setRawEmail] = useState<string>("");
-  const [retrieveSecret, setRetrieveSecret] = useState<string>();
+  const [retrieveSecret, setRetrieveSecret] = useState<string>("");
   const toggleVisibility = () => setIsVisible(!isVisible);
   console.log("Error", error);
   const [newSecret, setNewSecret] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const registSecret = async () => {
+  const [retrieveSecretLoading,setRetrieveSecretLoading] = useState<boolean>(false);
+  const registSecret = async (outputs: RegisterOutput[]) => {
     try {
       if (!secrets) {
         throw new Error("Error fetchingg secrets");
@@ -272,14 +488,18 @@ export default function SecretList() {
       console.log("Ciphertext", ciphertext);
 
       console.log("Ciphertext", ciphertext);
+      const recoveryCanisters = outputs.map((output) =>
+        Principal.fromText(output.canister)
+      );
+
       const result = await storageActor.add_secret(
         {
           name: "My First Secret",
           secret: ciphertext,
           created_at: BigInt(Date.now()),
-          recovery_storage_canisters: [Principal.fromText(recoveryCanisterID)],
+          recovery_storage_canisters: recoveryCanisters,
         },
-        [rawEmail]
+        [...outputs.map((output) => output.output || "")]
       );
       console.log("Result", result);
       if ("Err" in result) {
@@ -296,9 +516,9 @@ export default function SecretList() {
     }
   };
 
-  const verifySecret = async (index: number) => {
+  const verifySecret = async (index: number,outputs:RegisterOutput[]) => {
     try {
-      setLoading(true);
+      setRetrieveSecretLoading(true);
       if (!secrets) {
         throw new Error("Error fetchingg secrets");
       }
@@ -310,7 +530,7 @@ export default function SecretList() {
       const secret_decryption_key = await storageActor.verify_secret(
         BigInt(index),
         tsk.public_key(),
-        [rawEmail]
+        [...outputs.map((output) => output.output || "")]
       );
       const pk_bytes_hex_result = await storageActor.get_public_key();
       if ("Err" in pk_bytes_hex_result) {
@@ -348,17 +568,19 @@ export default function SecretList() {
       console.log(e);
       toast.error(e.message);
     } finally {
-      setLoading(false);
+      setRetrieveSecretLoading(false);
     }
   };
 
   console.log("Secrets", secrets);
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="w-screen">
+      <CardHeader className="w-screen">
         <CardTitle>Secrets</CardTitle>
         <CardDescription>Click On Secrets to retrieve them</CardDescription>
+      </CardHeader>
+      <CardContent>
         <AddSecretModal
           isVisible={isVisible}
           loading={loading}
@@ -367,9 +589,7 @@ export default function SecretList() {
           setNewSecret={setNewSecret}
           toggleVisibility={toggleVisibility}
         />
-      </CardHeader>
-      <CardContent>
-        <SecretTable secrets={secrets ?? []} />
+        <SecretTable retrieveSecret={retrieveSecret} loading={retrieveSecretLoading}  verifySecret={verifySecret} secrets={secrets ?? []} />
       </CardContent>
       <CardFooter>
         <div className="text-xs text-muted-foreground">
