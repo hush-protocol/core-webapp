@@ -29,7 +29,7 @@ for canister in $(echo $CANISTERS | sed "s/,/ /g"); do
   generate_did "$canister"
 done
 
-RECOVERY_CANISTERS="dkim_email_verifier"
+RECOVERY_CANISTERS="dkim_email_verifier,aadhaar_digital_zk_verifier"
 
 for canister in $(echo $RECOVERY_CANISTERS | sed "s/,/ /g"); do 
     generate_did_for_recovery "$canister"

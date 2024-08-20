@@ -78,7 +78,7 @@ fn convert_to_public_input(json_array: Vec<String>) -> Vec<Fr> {
   }
 
 impl AadhaarVerifier {
-    fn verify(json_proof:&str,public_input_json:&str) -> bool{
+    pub fn verify(json_proof:&str,public_input_json:&str) -> bool{
         let json_vk: JsonVerifyingKey = serde_json::from_str(ZK_PROOF_PARAMS).expect("JSON was not well-formatted");
         let vk = convert_to_verifying_key(json_vk);
         let vk_prepared = prepare_verifying_key(&vk);
@@ -108,3 +108,4 @@ impl AadhaarVerifier {
         
     }   
 }
+

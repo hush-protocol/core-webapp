@@ -1,5 +1,10 @@
 {
   "canisters": {
+    "aadhaar_digital_zk_verifier":{
+      "type":"rust",
+      "package":"aadhaar_digital_zk_verifier",
+      "candid":"src/backend/recovery/aadhaar_digital_zk_verifier/aadhaar_digital_zk_verifier.did"
+    },
     "recovery_dkim_email_verifier":{
       "candid":"src/backend/recovery/dkim_email_verifier/dkim_email_verifier.did",
       "package":"dkim_email_verifier",
@@ -23,6 +28,7 @@
     
     "hush-web-app-frontend": {
       "dependencies": [
+        "aadhaar_digital_zk_verifier",
         "recovery_dkim_email_verifier",
         "hush",
         "storage",
