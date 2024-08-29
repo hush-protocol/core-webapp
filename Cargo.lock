@@ -860,6 +860,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "40ecd4077b5ae9fd2e9e169b102c6c330d0605168eb0e8bf79952b256dbefffd"
 
 [[package]]
+name = "github_oauth_verifier"
+version = "0.1.0"
+dependencies = [
+ "bincode",
+ "candid 0.10.9",
+ "ic-cdk 0.13.2",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "group"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
