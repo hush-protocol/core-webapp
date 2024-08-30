@@ -29,11 +29,11 @@ async fn get_current_epoch() -> u64 {
 
 #[update]
 fn add_epoch(witness: Vec<Witness>,minimum_witnesses: u128) -> Result<(), String> {
-    // let caller = ic_cdk::caller();
-    // let owner = state::ReclaimProtocolState::get_owner();
-    // if caller != owner {
-    //     return Err("Only the owner can add an epoch".to_string());
-    // }
+    let caller = ic_cdk::caller();
+    let owner = state::ReclaimProtocolState::get_owner();
+    if caller != owner {
+        return Err("Only the owner can add an epoch".to_string());
+    }
     let new_epoch_id = state::ReclaimProtocolState::get_current_epoch() + 1_u64;
     let now = ic_cdk::api::time();
     
