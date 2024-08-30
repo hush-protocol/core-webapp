@@ -23,7 +23,7 @@ function generate_did_for_recovery() {
 }
 
 # The list of canisters of your project
-CANISTERS="hush,storage"
+CANISTERS="hush,storage,reclaim_verifier_unofficial"
 
 for canister in $(echo $CANISTERS | sed "s/,/ /g"); do
   generate_did "$canister"

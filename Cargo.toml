@@ -5,6 +5,7 @@ members = [
     "src/backend/hush",
     "src/backend/recovery/dkim_email_verifier",
     "src/backend/recovery/aadhaar_digital_zk_verifier",
-    "src/backend/recovery/github_oauth_verifier"
+    "src/backend/recovery/github_oauth_verifier",
+    "src/backend/reclaim_verifier_unofficial"
 ]
 resolver = "2"

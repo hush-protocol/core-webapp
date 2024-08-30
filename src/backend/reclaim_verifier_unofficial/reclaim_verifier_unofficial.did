@@ -1,0 +1,16 @@
+type ClaimInfo = record { context : text; provider : text; parameters : text };
+type CompleteClaimData = record {
+  owner : text;
+  timestampS : nat64;
+  epoch : nat64;
+  identifier : text;
+};
+type Result = variant { Ok; Err : text };
+type SignedClaim = record { claim : CompleteClaimData; signatures : vec text };
+type Witness = record { host : text; address : text };
+service : (text) -> {
+  add_epoch : (vec Witness, nat) -> (Result);
+  get_current_epoch : () -> (nat64) query;
+  get_owner : () -> (principal) query;
+  verify_proof : (ClaimInfo, SignedClaim) -> (Result) query;
+}
