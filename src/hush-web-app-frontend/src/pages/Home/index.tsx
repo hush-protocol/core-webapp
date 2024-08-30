@@ -7,9 +7,11 @@ import { useState } from "react";
 import { hush } from "declarations/hush";
 import { useLocation } from "wouter";
 import { createActor as createStorageActor,  } from "declarations/storage";
+import {reclaim_verifier_unofficial} from "declarations/reclaim_verifier_unofficial"
 import { toast } from "sonner";
 import { useHushUser } from "@/lib/store/user-store";
 import { UsernameCard } from "./username-card";
+import { Button } from "@/components/ui/button";
 // import { Button } from "@nextui-org/react";
 
 // import { Label } from "@radix-ui/react-select";
@@ -57,9 +59,22 @@ export default function HomePage() {
       setLoading(false);
     }
   };
+  const reclaim = async ()=>{
+    console.log('hi')
+    await reclaim_verifier_unofficial.add_epoch(
+      [
+        {
+          address:"0x1249394549345",
+          host:""
+        }
+      ],
+    )
+
+  }
   return (
     <div className="w-screen h-screen grid place-items-center">
-      <UsernameCard loading={loading} onEnterClick={onEnterClick} setUsername={setUsername} username={username}/>
+      <Button onClick={reclaim}>Recliam</Button>
+      {/* <UsernameCard loading={loading} onEnterClick={onEnterClick} setUsername={setUsername} username={username}/> */}
     </div>
   );
 }

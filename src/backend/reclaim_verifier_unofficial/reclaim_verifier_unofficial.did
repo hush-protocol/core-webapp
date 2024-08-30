@@ -12,5 +12,6 @@ service : (text) -> {
   add_epoch : (vec Witness, nat) -> (Result);
   get_current_epoch : () -> (nat64) query;
   get_owner : () -> (principal) query;
+  get_time : () -> (nat64) query;
   verify_proof : (ClaimInfo, SignedClaim) -> (Result) query;
 }

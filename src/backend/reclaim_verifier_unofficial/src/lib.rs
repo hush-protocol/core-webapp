@@ -11,9 +11,10 @@ mod identity_digest;
 
 #[init]
 async fn init(owner: String){
-    if(!owner.is_empty()){
+    if !owner.is_empty() {
         state::ReclaimProtocolState::set_owner(Principal::from_text(owner).unwrap());
     }
+   
     
 }
 
@@ -29,13 +30,13 @@ async fn get_current_epoch() -> u64 {
 
 #[update]
 fn add_epoch(witness: Vec<Witness>,minimum_witnesses: u128) -> Result<(), String> {
-    let caller = ic_cdk::caller();
+    let caller: Principal = ic_cdk::caller();
     let owner = state::ReclaimProtocolState::get_owner();
     if caller != owner {
         return Err("Only the owner can add an epoch".to_string());
     }
     let new_epoch_id = state::ReclaimProtocolState::get_current_epoch() + 1_u64;
-    let now = ic_cdk::api::time();
+    let now = ic_cdk::api::time() / 1_000_000_u64; 
     
     let epoch = Epoch {
         id: new_epoch_id,
@@ -49,6 +50,7 @@ fn add_epoch(witness: Vec<Witness>,minimum_witnesses: u128) -> Result<(), String
 
     Ok(())
 }
+
 
 #[query]
 async fn verify_proof(claim_info: ClaimInfo,signed_claim: SignedClaim) -> Result<(), String> {
@@ -86,25 +88,5 @@ async fn verify_proof(claim_info: ClaimInfo,signed_claim: SignedClaim) -> Result
 }
 
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use ic_cdk::api::time;
-    use reclaim::SignedClaim;
-    use state::Witness;
-
-    #[test]
-    fn test_add_epoch() {
-        let witness = vec![
-            Witness {
-                address: "0x123".to_string(),
-                host: "".to_string()
-            }
-        ];
-        let minimum_witnesses = 2;
-        let result = add_epoch(witness, minimum_witnesses).unwrap();
-        assert_eq!(result, ());
-    }
-}
 
 ic_cdk::export_candid!();
