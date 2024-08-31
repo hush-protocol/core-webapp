@@ -64,6 +64,8 @@ async fn verify_proof(claim_info: ClaimInfo,signed_claim: SignedClaim) -> Result
         return Err("Hash Mismatch".to_string());
     }
 
+    ic_cdk::println!("Claim Identifier: {}", hashed);
+
     let expected_witness = reclaim::SignedClaim::fetch_witness_for_claim(
         current_epoch,
         signed_claim.claim.identifier.clone(),
@@ -74,12 +76,18 @@ async fn verify_proof(claim_info: ClaimInfo,signed_claim: SignedClaim) -> Result
 
     let signed_witness = signed_claim.recover_signers_of_signed_claim();
 
+
+    ic_cdk::println!("Expected Witnesses: {:?}", expected_witness_addresses);
+
     if expected_witness_addresses.len() != signed_witness.len() {
         return Err("Length Mismatch".to_string());
     }
+    ic_cdk::println!("Signed Witnesses: {:?}", signed_witness);
 
     for signed in signed_witness {
-        if !expected_witness_addresses.contains(&signed) {
+        ic_cdk::println!("Signed: {}", signed);
+        ic_cdk::println!("Expected: {:?}", expected_witness_addresses);
+        if !expected_witness_addresses.iter().any(|addr| addr.to_lowercase() == signed.to_lowercase()) {
             return Err("Signature Mismatch".to_string());
         }
     }
